@@ -250,4 +250,25 @@ mod tests {
                 .collect()
         );
     }
+
+    #[test]
+    fn any_single_allows_public_key_or_web_approval() {
+        let policy = any_single(&[
+            CredentialKind::PublicKey,
+            CredentialKind::WebUserApproval,
+            CredentialKind::Totp,
+        ]);
+        assert!(matches!(
+            policy.is_sufficient(Protocol::Ssh, &kinds(&[CredentialKind::PublicKey])),
+            CredentialPolicyResponse::Ok
+        ));
+        assert!(matches!(
+            policy.is_sufficient(Protocol::Ssh, &kinds(&[CredentialKind::WebUserApproval])),
+            CredentialPolicyResponse::Ok
+        ));
+        assert!(matches!(
+            policy.is_sufficient(Protocol::Ssh, &kinds(&[CredentialKind::Totp])),
+            CredentialPolicyResponse::Need(_)
+        ));
+    }
 }

@@ -433,18 +433,9 @@ impl ConfigProvider for DatabaseConfigProvider {
             .copied()
             .collect::<HashSet<_>>();
 
-        // "Any single credential" policy should not include WebUserApproval
-        // if other authentication methods are available because it could lead to user confusion
+        // Allow WebUserApproval (in-browser SSO) alongside PublicKey in "any single credential" mode.
         let default_policy = Box::new(AnySingleCredentialPolicy {
-            supported_credential_types: if supported_credential_types.len() > 1 {
-                supported_credential_types
-                    .iter()
-                    .copied()
-                    .filter(|x| x != &CredentialKind::WebUserApproval)
-                    .collect()
-            } else {
-                supported_credential_types.clone()
-            },
+            supported_credential_types: supported_credential_types.clone(),
         }) as Box<dyn CredentialPolicy + Sync + Send>;
 
         let policy = if let Some(req) = user.credential_policy.clone() {
